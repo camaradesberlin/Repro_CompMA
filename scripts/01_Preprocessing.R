@@ -46,7 +46,7 @@ df <- df %>%
            ),
     across(c(
       n, No.Limbs, No.Session, No.Cycles, Occlusion, Reperfusion, Occlusion.time
-    ), as.integer))) %>%# warning: NA's introduced by coercion. 
+    ), as.integer)) %>% # warning: NA's introduced by coercion. 
      fill(RefID, Author, Species
     )
 
