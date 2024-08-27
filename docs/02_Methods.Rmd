@@ -39,3 +39,7 @@ For continuous variables (i.e., number of RIC cycles, number of RIC sessions, du
 After calculating of SMD's using the escalc() function from the metafor package, we will calculate random effects meta-analysis using metagen() with % infarct volume as the response variable. Described subgroups will be analyzed analogous to the main analysis.
 
 Successful replication is achieved if our results lie within 10% (??) of the results of the original review without a necessary change in the interpretation of the data.
+
+### Data availability
+
+All data as well as the code are part of this manuscript and can be inspected on the CAMARADES Berlin github page.
