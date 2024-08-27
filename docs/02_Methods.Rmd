@@ -1,0 +1,5 @@
+## Methods
+<!-- 
+- Detail the methods you used in your reproducibility attempt and how closely they match the published methods.
+- Describe any contact with authors you made regarding the materials or methods you needed for the replication attempt.
+- Please attach any code or other methods you used as an appendix. -->

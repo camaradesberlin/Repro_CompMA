@@ -6,6 +6,7 @@
 ################################################################################
 library(tidyverse)
 library(readxl)
+library(metafor)
 
 #### Load data
 df <- read_excel(here::here("data", "Copy of RIC_infarct volume data_updated.xlsx"))
@@ -16,7 +17,7 @@ colnames(df)
 
 df <- df %>%
   select(-c('Method of infarct measurement (latest method used)', 'Was infarct volume provided or calculated?',
-         'If calculated, what figure was volume obtained from?')) %>%
+         'If calculated, what figure was volume obtained from?', '95% CI', 'IQR')) %>%
   rename(
     "Author" = "First Author (Year)",
     "Condition" = "Control vs RIC",
@@ -47,9 +48,25 @@ df <- df %>%
     across(c(
       n, No.Limbs, No.Session, No.Cycles, Occlusion, Reperfusion, Occlusion.time
     ), as.integer)) %>% # warning: NA's introduced by coercion. 
-     fill(RefID, Author, Species
+     fill(RefID, Author, Species, Stroke.Type, Model, Occlusion.Time
     )
 
+var <- c("Anesthesia", "Int.Label", "n", "Mean", "Median", "SD", "SEM",
+         "Type.RIC", "Time.cond", "Time.RIC", "No.Limbs", "Limbs", "No.Session",
+         "No.Cycles", "Occlusion", "Reperfusion")
 
 df.wide <- df %>%
-  group_by(RefID)
+  group_by(RefID) %>%
+  pivot_wider(names_from = Condition,
+              values_from = all_of(var))
+
+df.wide_es <- escalc(measure = "SMD",   # Specifies the type of effect size (Standardized Mean Difference)
+                     m1i = Mean_RIC,         # Mean of treatment group
+                     sd1i = SD_RIC,       # SD of treatment group
+                     n1i = n_RIC,         # Sample size of treatment group
+                     m2i = Mean_Control,         # Mean of control group
+                     sd2i = SD_Control,       # SD of control group
+                     n2i = n_Control,         # Sample size of control group
+                     data = df_wide)
+
+save(df.wide_es, file = here::here("data", "RIC_Ripley_wide_2024-08-27.RData"))
