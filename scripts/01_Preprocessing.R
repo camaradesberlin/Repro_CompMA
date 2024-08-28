@@ -4,18 +4,27 @@
 ## Authors: Maria Economou, Torsten Rackoll
 ## Date: 27.08.2024
 ################################################################################
+
+# Libraries ---------------------------------------------------------------
+
+
 library(tidyverse)
 library(readxl)
 library(metafor)
 
-#### Load data
-df <- read_excel(here::here("data", "Copy of RIC_infarct volume data_updated.xlsx"))
 
-### inspect structure of data
-str(df)
-colnames(df)
+# Load data ---------------------------------------------------------------
 
-df <- df %>%
+
+raw_data <- read_excel(here::here("data", "Copy of RIC_infarct volume data_updated.xlsx"))
+
+
+# Inspect structure of data -----------------------------------------------
+
+str(raw_data)
+colnames(raw_data)
+
+df <- raw_data %>%
   select(-c('Method of infarct measurement (latest method used)', 'Was infarct volume provided or calculated?',
          'If calculated, what figure was volume obtained from?', '95% CI', 'IQR')) %>%
   rename(
@@ -37,23 +46,46 @@ df <- df %>%
     "Stroke.Type" = "Stroke type (permanent or reperfusion model)",
     "Model" = "Stroke type",
     "Occlusion.time" = "Occlusion time (min)"
-  ) %>%  mutate(across(c(
-    Anesthesia, Species, Condition, Ref.vol, Type.RIC,
-    Time.cond, Limbs, Sex, Stroke.Type, Model)
-    , as_factor),
+  ) %>% 
+  mutate(
     across(c(
-      Mean, Median, Time.RIC
-    ), as.numeric
-           ),
+      Anesthesia, Species, Condition, Ref.vol, Type.RIC,
+      Time.cond, Limbs, Sex, Stroke.Type, Model), 
+      as_factor),
     across(c(
-      n, No.Limbs, No.Session, No.Cycles, Occlusion, Reperfusion, Occlusion.time
-    ), as.integer)) %>% # warning: NA's introduced by coercion. 
-     fill(RefID, Author, Species, Stroke.Type, Model, Occlusion.Time
+      Mean, Median, Time.RIC),
+      as.numeric),
+    across(c(
+      n, No.Limbs, No.Session, No.Cycles, Occlusion, Reperfusion, Occlusion.time), 
+      as.integer)) %>% # warning: NA's introduced by coercion. 
+     fill(RefID, Author, Species, Stroke.Type, Model, Occlusion.time
     )
+
+# why does column Median contain text (same information as Int.Label) for the Ren et al 2008 study?
 
 var <- c("Anesthesia", "Int.Label", "n", "Mean", "Median", "SD", "SEM",
          "Type.RIC", "Time.cond", "Time.RIC", "No.Limbs", "Limbs", "No.Session",
          "No.Cycles", "Occlusion", "Reperfusion")
+
+check_studies <- df %>% 
+  group_by(RefID) %>% 
+  tally() %>% 
+  filter(n > 2) %>% 
+  select(RefID) %>% 
+  left_join(df, by = "RefID")
+
+studies_multi_contr <- check_studies %>% 
+  group_by(RefID, Condition) %>% 
+  tally() %>% 
+  pivot_wider(names_from = Condition, values_from = n) %>% 
+  filter(Control == 1) %>% 
+  select(RefID) %>% 
+  left_join(df, by = "RefID") %>% 
+  ungroup() %>% 
+  group_by(RefID) %>% 
+  pivot_wider(names_from = Condition,
+              values_from = c(n, Mean, Median, SD, SEM)) %>% 
+  fill(n_Control, Mean_Control, Median_Control, SD_Control, SEM_Control)
 
 df.wide <- df %>%
   group_by(RefID) %>%
