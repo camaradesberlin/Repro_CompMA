@@ -21,8 +21,8 @@ raw_data <- read_excel(here::here("data", "Copy of RIC_infarct volume data_updat
 
 # Inspect structure of data -----------------------------------------------
 
-str(raw_data)
-colnames(raw_data)
+# str(raw_data)
+# colnames(raw_data)
 
 df <- raw_data %>%
   select(-c('Method of infarct measurement (latest method used)', 'Was infarct volume provided or calculated?',
@@ -56,16 +56,21 @@ df <- raw_data %>%
       Mean, Median, Time.RIC),
       as.numeric),
     across(c(
-      n, No.Limbs, No.Session, No.Cycles, Occlusion, Reperfusion, Occlusion.time), 
+      No.Limbs, No.Session, No.Cycles, Occlusion, Reperfusion, Occlusion.time), 
       as.integer)) %>% # warning: NA's introduced by coercion. 
      fill(RefID, Author, Species, Stroke.Type, Model, Occlusion.time
-    )
+    ) %>% 
+  mutate(Condition2 = Condition)
 
 # why does column Median contain text (same information as Int.Label) for the Ren et al 2008 study?
 
 var <- c("Anesthesia", "Int.Label", "n", "Mean", "Median", "SD", "SEM",
          "Type.RIC", "Time.cond", "Time.RIC", "No.Limbs", "Limbs", "No.Session",
          "No.Cycles", "Occlusion", "Reperfusion")
+
+
+# Identify studies with more than one comparison (one control group vs one intervention group)
+# to enable correct pivoting of data into wide format for meta-analysis
 
 check_studies <- df %>% 
   group_by(RefID) %>% 
@@ -74,7 +79,9 @@ check_studies <- df %>%
   select(RefID) %>% 
   left_join(df, by = "RefID")
 
-studies_multi_contr <- check_studies %>% 
+
+# Pivot studies with several experimental conditions and one control group
+studies_one_contr <- check_studies %>% 
   group_by(RefID, Condition) %>% 
   tally() %>% 
   pivot_wider(names_from = Condition, values_from = n) %>% 
@@ -85,12 +92,70 @@ studies_multi_contr <- check_studies %>%
   group_by(RefID) %>% 
   pivot_wider(names_from = Condition,
               values_from = c(n, Mean, Median, SD, SEM)) %>% 
-  fill(n_Control, Mean_Control, Median_Control, SD_Control, SEM_Control)
+  fill(Sex, n_Control, Mean_Control, Median_Control, SD_Control, SEM_Control, .direction = "downup") %>% 
+  filter(!Condition2 %in% "Control") %>%
+  ungroup()
 
-df.wide <- df %>%
+# Pivot studies with several experiment-control comparisons
+
+study_264 <- check_studies %>% 
+  filter(RefID %in% "264") %>% 
+  mutate(group = case_when(grepl(" A", Int.Label) ~ "A",
+                           grepl("B", Int.Label) ~ "B")) %>%
+  pivot_wider(names_from = Condition,
+              values_from = c(n, Mean, Median, SD, SEM)) %>% 
+  group_by(RefID) %>% 
+  fill(Sex) %>% 
+  group_by(group) %>% 
+  fill(n_Control, Mean_Control, Median_Control, SD_Control, SEM_Control, .direction = "downup") %>% 
+  filter(!Condition2 %in% "Control") %>%
+  ungroup() %>% 
+  select(-group)
+
+study_138 <- check_studies %>% 
+  filter(RefID %in% "138") %>% 
+  mutate(Int.Label = case_when(grepl("12h|12 h", Int.Label) ~ "12h",
+                           grepl("24", Int.Label) ~ "24h",
+                           grepl("120", Int.Label) ~ "120h")) %>%
+  group_by(RefID) %>% 
+  fill(Sex) %>% 
+  pivot_wider(names_from = Condition,
+              values_from = c(n, Mean, Median, SD, SEM)) %>% 
+  group_by(Int.Label) %>% 
+  fill(n_Control, Mean_Control, Median_Control, SD_Control, SEM_Control, .direction = "downup") %>% 
+  filter(!Condition2 %in% "Control") %>%
+  ungroup()
+  
+# for studies 157, 317, 324: not clear which control is used for which experimental condition from the labels
+# need to go back to publication?
+
+check_studies %>% 
+  filter(!RefID %in% studies_one_contr$RefID)
+
+# bind all multiple comparison studies together
+studies_multi_comp <- rbind(study_264, study_138)
+
+df_wide <- df %>% 
+  filter(!RefID %in% check_studies$RefID) %>% 
   group_by(RefID) %>%
   pivot_wider(names_from = Condition,
-              values_from = all_of(var))
+              values_from = all_of(var)) %>% 
+  select(-c(Condition2)) %>% 
+  fill(everything(), .direction = "downup") %>% 
+  distinct() %>% 
+  ungroup %>% 
+  bind_rows(studies_one_contr) %>% 
+  bind_rows(studies_multi_comp) %>% 
+  # need this to only keep comparisons with quantitative data
+  filter(!grepl("Infarct volume not provided|Infarct volume not reported|No infarct volume reported", Comments)) %>% 
+  # harmonize error measure - will we convert SEM to SD?
+  mutate(Error_RIC = case_when(is.na(SD_RIC) ~ SEM_RIC,
+                               is.na(SEM_RIC) ~ SD_RIC),
+         Error_Control = case_when(is.na(SD_Control) ~ SEM_Control,
+                                   is.na(SEM_Control) ~ SD_Control))
+
+
+# still need to deal with sample size (it's a range sometimes and can't be converted to numeric)
 
 df.wide_es <- escalc(measure = "SMD",   # Specifies the type of effect size (Standardized Mean Difference)
                      m1i = Mean_RIC,         # Mean of treatment group
@@ -101,4 +166,4 @@ df.wide_es <- escalc(measure = "SMD",   # Specifies the type of effect size (Sta
                      n2i = n_Control,         # Sample size of control group
                      data = df_wide)
 
-save(df.wide_es, file = here::here("data", "RIC_Ripley_wide_2024-08-27.RData"))
+# save(df.wide_es, file = here::here("data", "RIC_Ripley_wide_2024-08-27.RData"))
