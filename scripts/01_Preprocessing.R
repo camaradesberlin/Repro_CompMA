@@ -66,7 +66,11 @@ df <- raw_data %>%
   mutate(Sex = case_when(Sex %in% "male" ~ "Male",
                          Sex %in% "50% male" ~ "Both",
                          .default = Sex)) %>% 
+  # need this to only keep comparisons with quantitative data
+  filter(!grepl("Infarct volume not provided|Infarct volume not reported|No infarct volume reported", Comments)) %>%
   mutate(Condition2 = Condition)
+
+# length(unique(df$RefID))
 
 # column Median contain text (same information as Int.Label) for the Ren et al 2008 study?
 # this is converted into NA with the as.numeric() above
@@ -85,12 +89,26 @@ check_studies <- df %>%
   select(RefID) %>% 
   left_join(df, by = "RefID")
 
+# Identify studies where # experimental arms > N control
+studies_to_sample <- check_studies %>% 
+  group_by(RefID, Condition) %>% 
+  tally() %>% 
+  filter(!Condition %in% "Control") %>% 
+  rename(n_exp = n) %>% 
+  left_join((check_studies %>% 
+               filter(Condition %in% "Control") %>% 
+               select(RefID, n))) %>% 
+  filter(n_exp > n) %>% 
+  pull(RefID) %>% 
+  unique()
+
 # Pivot studies with several experimental conditions and one control group
-# do we need adjustment of control group values?
-# from protocol: For studies using a single control group and multiple experimental groups, 
-# control group sample sizes were split to avoid double counting control animals.
 
 studies_one_contr <- check_studies %>% 
+  # remove studies from which we randomly choose comparisons
+  filter(!RefID %in% studies_to_sample) %>% 
+  # remove unused control group from RefID 317
+  filter(!(RefID %in% 317 & Int.Label %in% "Control")) %>% 
   group_by(RefID, Condition) %>% 
   tally() %>% 
   pivot_wider(names_from = Condition, values_from = n) %>% 
@@ -105,65 +123,123 @@ studies_one_contr <- check_studies %>%
   filter(!Condition2 %in% "Control") %>%
   ungroup()
 
-# Pivot studies with several experiment-control comparisons
+studies_one_contr_sampleAdj <- studies_one_contr %>% 
+  group_by(RefID) %>% 
+  tally() %>% 
+  left_join(studies_one_contr, by = "RefID") %>% 
+  relocate(n_comp = n, .before = n_Control) %>% 
+  mutate(n_Control = n_Control/n_comp) %>% 
+  select(-n_comp)
+  
 
-study_264 <- check_studies %>% 
-  filter(RefID %in% "264") %>% 
-  mutate(group = case_when(grepl(" A", Int.Label) ~ "A",
-                           grepl("B", Int.Label) ~ "B")) %>%
-  pivot_wider(names_from = Condition,
-              values_from = c(n, Mean, Median, SD, SEM)) %>% 
-  group_by(group) %>% 
-  fill(n_Control, Mean_Control, Median_Control, SD_Control, SEM_Control, .direction = "downup") %>% 
-  filter(!Condition2 %in% "Control") %>%
-  ungroup() %>% 
-  select(-group)
+# Pivot studies with several experiment-control comparisons
+# 
+to_pivot <- check_studies %>%
+  filter(!RefID %in% studies_one_contr$RefID) %>%
+  filter(!RefID %in% studies_to_sample) %>% 
+  pull(RefID) %>%
+  unique()
 
 study_138 <- check_studies %>% 
   filter(RefID %in% "138") %>% 
   mutate(Int.Label = case_when(grepl("12h|12 h", Int.Label) ~ "12h",
-                           grepl("24", Int.Label) ~ "24h",
-                           grepl("120", Int.Label) ~ "120h")) %>%
+                               grepl("24", Int.Label) ~ "24h",
+                               grepl("120", Int.Label) ~ "120h")) %>%
   pivot_wider(names_from = Condition,
               values_from = c(n, Mean, Median, SD, SEM)) %>% 
   group_by(Int.Label) %>% 
   fill(n_Control, Mean_Control, Median_Control, SD_Control, SEM_Control, .direction = "downup") %>% 
   filter(!Condition2 %in% "Control") %>%
   ungroup()
+
+study_157 <- check_studies %>% 
+  filter(RefID %in% "157") %>% 
+  filter(!grepl("MCAO \\(", Int.Label)) %>% 
+  pivot_wider(names_from = Condition,
+              values_from = c(n, Mean, Median, SD, SEM)) %>% 
+  group_by(Anesthesia) %>% 
+  fill(n_Control, n_RIC, Mean_Control, Mean_RIC, Median_Control, Median_RIC, 
+       SD_Control, SD_RIC, SEM_Control, SEM_RIC, .direction = "downup") %>% 
+  filter(!Condition2 %in% "Control") %>%
+  ungroup()
+
+# study_264 <- check_studies %>% 
+#   filter(RefID %in% "264") %>% 
+#   mutate(group = case_when(grepl(" A", Int.Label) ~ "A",
+#                            grepl("B", Int.Label) ~ "B")) %>%
+#   pivot_wider(names_from = Condition,
+#               values_from = c(n, Mean, Median, SD, SEM)) %>% 
+#   group_by(group) %>% 
+#   fill(n_Control, Mean_Control, Median_Control, SD_Control, SEM_Control, .direction = "downup") %>% 
+#   filter(!Condition2 %in% "Control") %>%
+#   ungroup() %>% 
+#   select(-group)
   
-# for studies 157, 317, 324: not clear which control is used for which experimental condition from the labels
+study_324 <- check_studies %>% 
+  filter(RefID %in% "324") %>% 
+  mutate(group = case_when(grepl("Rapid", Int.Label) ~ "Rapid",
+                           grepl("12h", Int.Label) ~ "12h",
+                           grepl("2d", Int.Label) ~ "2d")) %>%
+  filter(!is.na(group)) %>% 
+  pivot_wider(names_from = Condition,
+              values_from = c(n, Mean, Median, SD, SEM)) %>% 
+  group_by(group) %>% 
+  fill(n_Control, n_RIC, Mean_Control, Mean_RIC, Median_Control, Median_RIC, 
+       SD_Control, SD_RIC, SEM_Control, SEM_RIC, .direction = "downup") %>% 
+  filter(!Condition2 %in% "Control") %>%
+  ungroup()
 
-# protocol: Where experimental arms outnumbered control group animals, the review team made decisions on the most relevant experimental arms, 
-# in consultation with stroke experts. 
+study_324_sampleAdj <- study_324 %>% 
+  group_by(RefID, group) %>% 
+  tally() %>% 
+  left_join(study_324, by = c("RefID", "group")) %>% 
+  relocate(n_comp = n, .before = n_Control) %>% 
+  mutate(n_Control = case_when(n_comp > 1 ~ n_Control/n_comp,
+                               .default = n_Control)) %>% 
+  select(-c(n_comp, group))
 
-problem <- check_studies %>% 
-  filter(RefID %in% c(157, 317, 324))
+# Merge fixed studies
+check_studies_fixed <- rbind(studies_one_contr_sampleAdj, study_138, study_157, study_324_sampleAdj)
 
-
-# check in how many studies sample size of control group is lower than experimental conditions
-# pick one at random for analysis (several times?)
-
-
-# bind all multiple comparison studies together
-studies_multi_comp <- rbind(study_264, study_138)
+# Randomly sample comparisons from the studies where arbitrary decisions were made
+sample_comparisons <- df %>% 
+  filter(RefID %in% studies_to_sample) %>% 
+  group_by(RefID, Condition) %>% 
+  slice_sample(n = 1) %>% 
+  ungroup()
 
 df_wide <- df %>% 
   filter(!RefID %in% check_studies$RefID) %>% 
+  # add studies with sampled comparisons
+  bind_rows(sample_comparisons) %>% 
   group_by(RefID) %>%
   pivot_wider(names_from = Condition,
               values_from = all_of(var)) %>% 
   select(-c(Condition2)) %>% 
   fill(everything(), .direction = "downup") %>% 
   distinct() %>% 
-  ungroup %>% 
-  bind_rows(studies_one_contr) %>% 
-  bind_rows(studies_multi_comp) %>% 
-  # need this to only keep comparisons with quantitative data
-  filter(!grepl("Infarct volume not provided|Infarct volume not reported|No infarct volume reported", Comments)) %>% 
+  ungroup() %>% 
+  # add studies with different combinations of experimental arms + control groups
+  bind_rows(check_studies_fixed) %>% 
   # harmonize error measure - will we convert SEM to SD?
   mutate(SD_RIC = case_when(is.na(SD_RIC) & !is.na(SEM_RIC) ~ SEM_RIC * sqrt(n_RIC),
                             .default = SD_RIC),
          SD_Control = case_when(is.na(SD_Control) & !is.na(SEM_Control) ~ SEM_Control * sqrt(n_Control),
-                            .default = SD_Control))
+                            .default = SD_Control)) %>% 
+  arrange(RefID)
+
 
 data.table::fwrite(df_wide, here::here("data","tidy","df_wide.csv"), row.names = F, col.names = T)
+
+
+# code to identify the problem and sample
+test <- check_studies %>% 
+  group_by(RefID, Condition) %>% 
+  tally() %>% 
+  filter(!Condition %in% "Control") %>% 
+  rename(n_exp = n) %>% 
+  left_join((check_studies %>% 
+               filter(Condition %in% "Control") %>% 
+               select(RefID, n)))
+
+
