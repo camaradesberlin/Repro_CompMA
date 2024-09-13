@@ -52,6 +52,8 @@ df <- raw_data %>%
         Time.cond, Limbs, Sex, Stroke.Type, Model), 
       as_factor),
     # still need to deal with sample size (it's a range sometimes and can't be converted to numeric = NA)
+    # now we extract the lower boundary as sample size
+    n = ifelse(grepl("-", n), stringr::str_extract(n, "[^-]+"), n), 
     across(
       c(Mean, Median, Time.RIC, n),
       as.numeric)
@@ -66,7 +68,8 @@ df <- raw_data %>%
                          .default = Sex)) %>% 
   mutate(Condition2 = Condition)
 
-# why does column Median contain text (same information as Int.Label) for the Ren et al 2008 study?
+# column Median contain text (same information as Int.Label) for the Ren et al 2008 study?
+# this is converted into NA with the as.numeric() above
 
 var <- c("Anesthesia", "Int.Label", "n", "Mean", "Median", "SD", "SEM",
          "Type.RIC", "Time.cond", "Time.RIC", "No.Limbs", "Limbs", "No.Session",
@@ -87,7 +90,6 @@ check_studies <- df %>%
 # do we need adjustment of control group values?
 # from protocol: For studies using a single control group and multiple experimental groups, 
 # control group sample sizes were split to avoid double counting control animals.
-
 
 studies_one_contr <- check_studies %>% 
   group_by(RefID, Condition) %>% 
