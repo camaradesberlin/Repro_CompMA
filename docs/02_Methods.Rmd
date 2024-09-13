@@ -10,13 +10,13 @@
 
 The current project is part of the CAMARADES reproducibility challenge for the SR-SAVI conference 2024 in Zürich. The protocol of the project was predefined and published ...
 
-### Dataset 
+### Dataset
 
-As part of our project 'Investigating concordance between preclinical multicentre confirmatory trials and systematic reviews in stroke (INFORM-Stroke)', we approached the authors of the original systematic review to ask whether they would collaborate on an update of their work as the search was conducted in 2019. As part of the collaboration, the authors provided us with the raw data of their review in an excel file. The dataset consists of information extraction from primary studies matching eligibility/inclusion criteria and includes variables on study characteristics, intervention characteristics and quantitative outcomes (infarct volume, mortality, adverse events). All communication with the authors were part of the intended update for INFORM-Stroke. We did not? specifically contact the authors for this replication. 
+As part of our project 'Investigating concordance between preclinical multicentre confirmatory trials and systematic reviews in stroke (INFORM-Stroke)', we approached the authors of the original systematic review to ask whether they would collaborate on an update of their work as the search was conducted in 2019. As part of the collaboration, the authors provided us with the raw data of their review in an excel file. The dataset consists of information extracted from primary studies matching eligibility/inclusion criteria and includes variables on study characteristics, intervention characteristics and quantitative outcomes (infarct volume, mortality, adverse events). All communication with the authors were part of the intended update for INFORM-Stroke. We did not specifically contact the authors for this replication.
 
 ### Software
 
-The original review was analyzed using Comprehensive Meta-Analysis (CMA) (version 3; Biostat Inc., USA). We will use R statistical software (RRID...) with the packages tidyverse, metafor and meta.
+The original review was analyzed using Comprehensive Meta-Analysis (CMA) (version 3; Biostat Inc., USA). We used R statistical software (RRID...) with the packages tidyverse, metafor and meta.
 
 ### Analysis plan
 
@@ -24,13 +24,13 @@ Our aim is to reproduce the analysis presented in Ripley et al. (2021), guided o
 
 #### Methods of original study
 
-For continuous outcomes, a standardized mean difference (SMD) was calculated using random effects inverse variance meta-analyses and presented with 95% confidence intervals. SMD was chosen due to the different measurement techniques for our primary outcome of infarct size. 
+For continuous outcomes, a standardized mean difference (SMD) was calculated using random effects inverse variance meta-analyses and presented with 95% confidence intervals. SMD was chosen due to the different measurement techniques for our primary outcome of infarct size.
 
-Statistical heterogeneity was assessed using the I2 statistic. An I2 value of \> 50% was considered to indicate important heterogeneity requiring additional exploration. Where sufficient data were available, we performed subgroup analyses to determine whether the effect of RIC on infarct size varied by species, sex, number of limbs, which limb, type of RIC, number of sessions, number of cycles, duration of occlusion and reperfusion, RIC onset relative to stroke (preconditioning vs. postconditioning), time of RIC delivery relative to stroke, stroke model, and type of anesthesia (post hoc), randomization (post hoc), and blinding (post hoc). Significance of a subgroup interaction was determined by a z-test using CMA. 
+Statistical heterogeneity was assessed using the I2 statistic. An I2 value of \> 50% was considered to indicate important heterogeneity requiring additional exploration. Where sufficient data were available, we performed subgroup analyses to determine whether the effect of RIC on infarct size varied by species, sex, number of limbs, which limb, type of RIC, number of sessions, number of cycles, duration of occlusion and reperfusion, RIC onset relative to stroke (preconditioning vs. postconditioning), time of RIC delivery relative to stroke, stroke model, and type of anesthesia (post hoc), randomization (post hoc), and blinding (post hoc). Significance of a subgroup interaction was determined by a z-test using CMA.
 
-For studies using a single control group and multiple experimental groups, control group sample sizes were split to avoid double counting control animals. Where experimental arms outnumbered control group animals, the review team made decisions on the most relevant experimental arms, in consultation with stroke experts. 
+For studies using a single control group and multiple experimental groups, control group sample sizes were split to avoid double counting control animals. Where experimental arms outnumbered control group animals, the review team made decisions on the most relevant experimental arms, in consultation with stroke experts.
 
-Publication bias was examined using funnel plots and Egger’s regression test for trials reporting our primary outcome. Studies with missing data items for specific subgroups were not included in the corresponding subgroup analysis. 
+Publication bias was examined using funnel plots and Egger’s regression test for trials reporting our primary outcome. Studies with missing data items for specific subgroups were not included in the corresponding subgroup analysis.
 
 For continuous variables (i.e., number of RIC cycles, number of RIC sessions, duration of RIC occlusion, duration of RIC reperfusion, time of RIC onset), a univariate random effects meta-regression analysis was performed using the method of moments approach to investigate potential underlying relationships that may explain some of the variability in effect sizes. Subgroups included in this analysis were number of RIC cycles, number of RIC sessions, duration of RIC occlusion/reperfusion, duration of RIC occlusion/reperfusion during preconditioning/postconditioning, latest infarct measurement timepoint, and time of RIC onset in preconditioning and postconditioning. We included an additional subgroup analysis with regard to the type of anesthesia used. This subgroup is importantly included to assess if there are any differences in the neuroprotective benefits of different anesthetics when in conjunction with RIC.
 
