@@ -75,7 +75,6 @@ var <- c("Anesthesia", "Int.Label", "n", "Mean", "Median", "SD", "SEM",
          "Type.RIC", "Time.cond", "Time.RIC", "No.Limbs", "Limbs", "No.Session",
          "No.Cycles", "Occlusion", "Reperfusion")
 
-
 # Identify studies with more than one comparison (one control group vs one intervention group)
 # to enable correct pivoting of data into wide format for meta-analysis
 
@@ -140,6 +139,11 @@ study_138 <- check_studies %>%
 problem <- check_studies %>% 
   filter(RefID %in% c(157, 317, 324))
 
+
+# check in how many studies sample size of control group is lower than experimental conditions
+# pick one at random for analysis (several times?)
+
+
 # bind all multiple comparison studies together
 studies_multi_comp <- rbind(study_264, study_138)
 
@@ -162,11 +166,4 @@ df_wide <- df %>%
          SD_Control = case_when(is.na(SD_Control) & !is.na(SEM_Control) ~ SEM_Control * sqrt(n_Control),
                             .default = SD_Control))
 
-df.wide_es <- escalc(measure = "SMD",   # Specifies the type of effect size (Standardized Mean Difference)
-                     m1i = Mean_RIC,         # Mean of treatment group
-                     sd1i = SD_RIC,       # SD of treatment group
-                     n1i = n_RIC,         # Sample size of treatment group
-                     m2i = Mean_Control,         # Mean of control group
-                     sd2i = SD_Control,       # SD of control group
-                     n2i = n_Control,         # Sample size of control group
-                     data = df_wide)
+data.table::fwrite(df_wide, here::here("data","tidy","df_wide.csv"), row.names = F, col.names = T)
