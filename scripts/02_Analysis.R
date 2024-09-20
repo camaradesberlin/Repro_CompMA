@@ -1,8 +1,3 @@
-# libraries
-library(meta)
-library(metafor)
-library(tidyverse)
-library(dmetar)
 
 # Define fill colors for contour
 col.contour = c("gray75", "gray85", "gray95")

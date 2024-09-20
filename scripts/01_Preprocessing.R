@@ -9,7 +9,12 @@
 
 library(tidyverse)
 library(readxl)
+library(meta)
 library(metafor)
+library(dmetar)
+library(knitr)
+
+knitr::write_bib(c("metafor","dmetar"), file = here::here("docs/R_references.bib"))
 
 # Load data ---------------------------------------------------------------
 
