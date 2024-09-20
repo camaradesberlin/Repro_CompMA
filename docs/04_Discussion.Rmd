@@ -1,4 +1,4 @@
-## Discussion / Conclusion
+# Discussion / Conclusion
 
 <!-- What was your experience attempting to replicate / reproduce the study?
 What are your recommendations for the reproducibility of future systematic reviews and/or meta-analyses of in vitro or in vivo studies? -->

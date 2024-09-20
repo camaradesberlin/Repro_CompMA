@@ -1,4 +1,4 @@
-## Results and evaluation of reproducibility
+# Results and evaluation of reproducibility
 
 ```{=html}
 <!-- 
@@ -6,10 +6,10 @@
 - Were you able to reproduce all or part of the published results? Why / why not?
 - Please attach any relevant results as an appendix. -->
 ```
-### Description of the data
+## Description of the data
 
 The data we obtained and used to reproduce the results from Ripley et al were in a structured format and easy to work with. For some studies, data were extracted that were not needed to reproduce the results such as sham conditions. Respective entries were easy to identify using comments within the data. Data pre-processing included renaming of variables and rephrasing of some entries (e.g. '50% male' in the sex variable was converted to 'Both'). In cases in which cohort sizes were given as ranges, we used the lower number as the sample size. As defined in the methods of the original review <!--how to we call the thing we are replicating?--> we divided the control groups by the number of experimental arms if the ratio was higher than 1. In three cases within two studies this procedure would have ended in cohort sizes lower than one. The authors defined here that in those cases "Where experimental arms outnumbered control group animals, the review team made decisions on the most relevant experimental arms, in consultation with stroke experts." Although specified here, we were not able to identify, based on the data, a) what defined 'most relevant' and b) which comparison was finally included. The answer to b) was found in the supplemental file in which the rows excluded from analysis were marked red but we found no indication for what a) led to exclusions.
 
-### Main analyses
+## Main analyses
 
-### Subgroup analyses
+## Subgroup analyses
