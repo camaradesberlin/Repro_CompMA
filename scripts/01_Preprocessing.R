@@ -2,20 +2,18 @@
 ## SR-SAVI Reproducibility challenge
 ## Computational reproducibility of Ripley et al 2021
 ## Authors: Maria Economou, Torsten Rackoll
-## Date: 27.08.2024
+## Date: 30.09.2024
 ################################################################################
 
 # Libraries ---------------------------------------------------------------
 
-library(tidyverse)
-library(readxl)
-library(meta)
-library(metafor)
-library(dmetar)
-library(knitr)
-library(here)
+pacman::p_load(tidyverse, readxl, meta, metafor, knitr, here)
 
-knitr::write_bib(c("metafor","dmetar"), file = here::here("docs/R_references.bib"))
+# remotes::install_github("MathiasHarrer/dmetar")
+library(dmetar)
+
+# generate bib file for R packages
+knitr::write_bib(c("metafor","dmetar","meta","tidyverse"), file = here::here("docs/R_references.bib"))
 
 # Load data ---------------------------------------------------------------
 
@@ -68,10 +66,12 @@ df <- raw_data %>%
   group_by(RefID) %>% 
   fill(Sex, .direction = "downup") %>% 
   ungroup() %>% 
-  # harmonize sex variable
+  # code N/A as NA
   mutate(Sex = case_when(Sex %in% "male" ~ "Male",
                          Sex %in% "50% male" ~ "Both",
                          .default = Sex)) %>% 
+  # harmonize sex variable
+  mutate(Occlusion.time = na_if(Occlusion.time, "N/A")) %>% 
   # need this to only keep comparisons with quantitative data
   filter(!grepl("Infarct volume not provided|Infarct volume not reported|No infarct volume reported", Comments)) %>%
   mutate(Condition2 = Condition)
@@ -85,13 +85,14 @@ var <- c("Anesthesia", "Int.Label", "n", "Mean", "Median", "SD", "SEM",
 
 
 df <- df %>% 
-  # manually exclude cohorts that the authors excluded (suppl material)
+  # manually exclude cohorts that the authors excluded (red highlighted in suppl material)
   mutate(keep = case_when(RefID %in% 288 & !Int.Label %in% c("10/10 3 cycles","15/15 3 cycles","MCAO") ~ FALSE,
                           RefID %in% 286 & Int.Label %in% c("RIC-3-15","RIC-6-15") ~ FALSE,
                           RefID %in% 327 & Int.Label %in% "RIPC 30 min" ~ FALSE,
                           RefID %in% 264 & Int.Label %in% c("RIC A1","RIC A4","RIC A5","RIC A6","RIC B4") ~ FALSE,
                           .default = TRUE)) %>% 
-  filter(keep %in% TRUE)
+  filter(keep %in% TRUE) %>% 
+  select(-keep)
 
 # Identify studies with more than one comparison (one control group vs one intervention group)
 # to enable correct pivoting of data into wide format for meta-analysis
@@ -104,20 +105,21 @@ check_studies <- df %>%
   left_join(df, by = "RefID")
 
 # Identify studies where # experimental arms > N control
-studies_to_manually_adjust <- check_studies %>% 
-  group_by(RefID, Condition) %>% 
-  tally() %>% 
-  filter(!Condition %in% "Control") %>% 
-  rename(n_exp = n) %>% 
-  left_join((check_studies %>% 
-               filter(Condition %in% "Control") %>% 
-               select(RefID, n))) %>% 
-  filter(n_exp > n) %>% 
-  pull(RefID) %>% 
-  unique()
+# studies_manually_adjusted <- check_studies %>%
+#   group_by(RefID, Condition) %>%
+#   tally() %>%
+#   filter(!Condition %in% "Control") %>%
+#   rename(n_exp = n) %>%
+#   left_join((check_studies %>%
+#                filter(Condition %in% "Control") %>%
+#                select(RefID, n))) %>%
+#   filter(n_exp > n) %>%
+#   pull(RefID) %>%
+#   unique()
 
 
-# Pivot studies with several experimental conditions and one control group
+# Identify studies with several experimental conditions and one control group
+# and pivot into wide format
 
 studies_one_contr <- check_studies %>% 
   # remove unused control group from RefID 317
@@ -129,10 +131,12 @@ studies_one_contr <- check_studies %>%
   select(RefID) %>% 
   left_join(df, by = "RefID") %>% 
   ungroup() %>% 
-  group_by(RefID) %>% 
+  group_by(RefID) %>%
+  # pivot_wider(names_from = Condition,
+  #             values_from = c(n, Mean, Median, SD, SEM)) %>% 
   pivot_wider(names_from = Condition,
-              values_from = c(n, Mean, Median, SD, SEM)) %>% 
-  fill(n_Control, Mean_Control, Median_Control, SD_Control, SEM_Control, .direction = "downup") %>% 
+              values_from = c(n, Anesthesia, Mean, SD, SEM, Median)) %>% 
+  fill(n_Control, Mean_Control, Median_Control, SD_Control, SEM_Control, Anesthesia_Control, .direction = "downup") %>% 
   filter(!Condition2 %in% "Control") %>%
   ungroup()
 
@@ -145,11 +149,11 @@ studies_one_contr_sampleAdj <- studies_one_contr %>%
   select(-n_comp)
   
 
-# Pivot studies with several experiment-control comparisons
-# 
+# Identify studies with several experiment-control comparisons
+# and pivot into wide format
+
 to_pivot <- check_studies %>%
   filter(!RefID %in% studies_one_contr$RefID) %>%
-  filter(!RefID %in% studies_to_manually_adjust) %>% 
   pull(RefID) %>%
   unique()
 
@@ -159,22 +163,24 @@ study_138 <- check_studies %>%
                                grepl("24", Int.Label) ~ "24h",
                                grepl("120", Int.Label) ~ "120h")) %>%
   pivot_wider(names_from = Condition,
-              values_from = c(n, Mean, Median, SD, SEM)) %>% 
+              values_from = c(n, Anesthesia, Mean, Median, SD, SEM)) %>% 
   group_by(Int.Label) %>% 
-  fill(n_Control, Mean_Control, Median_Control, SD_Control, SEM_Control, .direction = "downup") %>% 
+  fill(n_Control, Mean_Control, Median_Control, SD_Control, SEM_Control, Anesthesia_Control, .direction = "downup") %>% 
   filter(!Condition2 %in% "Control") %>%
   ungroup()
 
 study_157 <- check_studies %>% 
   filter(RefID %in% "157") %>% 
   filter(!grepl("MCAO \\(", Int.Label)) %>% 
+  mutate(group = Anesthesia) %>% 
   pivot_wider(names_from = Condition,
-              values_from = c(n, Mean, Median, SD, SEM)) %>% 
-  group_by(Anesthesia) %>% 
+              values_from = c(n, Anesthesia, Mean, Median, SD, SEM)) %>% 
+  group_by(group) %>% 
   fill(n_Control, n_RIC, Mean_Control, Mean_RIC, Median_Control, Median_RIC, 
-       SD_Control, SD_RIC, SEM_Control, SEM_RIC, .direction = "downup") %>% 
+       SD_Control, SD_RIC, SEM_Control, SEM_RIC, Anesthesia_Control, Anesthesia_RIC, .direction = "downup") %>% 
   filter(!Condition2 %in% "Control") %>%
-  ungroup()
+  ungroup() %>% 
+  select(-group)
   
 study_324 <- check_studies %>% 
   filter(RefID %in% "324") %>% 
@@ -183,10 +189,10 @@ study_324 <- check_studies %>%
                            grepl("2d", Int.Label) ~ "2d")) %>%
   filter(!is.na(group)) %>% 
   pivot_wider(names_from = Condition,
-              values_from = c(n, Mean, Median, SD, SEM)) %>% 
+              values_from = c(n, Anesthesia, Mean, Median, SD, SEM)) %>% 
   group_by(group) %>% 
   fill(n_Control, n_RIC, Mean_Control, Mean_RIC, Median_Control, Median_RIC, 
-       SD_Control, SD_RIC, SEM_Control, SEM_RIC, .direction = "downup") %>% 
+       SD_Control, SD_RIC, SEM_Control, SEM_RIC, Anesthesia_Control, Anesthesia_RIC, .direction = "downup") %>% 
   filter(!Condition2 %in% "Control") %>%
   ungroup()
 
@@ -205,9 +211,9 @@ study_264 <- df %>%
   mutate(group = case_when(grepl(" A", Int.Label) ~ "A",
                            grepl("B", Int.Label) ~ "B")) %>%
   pivot_wider(names_from = Condition,
-              values_from = c(n, Mean, Median, SD, SEM)) %>%
+              values_from = c(n, Anesthesia, Mean, Median, SD, SEM)) %>%
   group_by(group) %>%
-  fill(n_Control, Mean_Control, Median_Control, SD_Control, SEM_Control, .direction = "downup") %>%
+  fill(n_Control, Mean_Control, Median_Control, SD_Control, SEM_Control, Anesthesia_Control, .direction = "downup") %>%
   filter(!Condition2 %in% "Control") %>%
   ungroup()
 
@@ -225,15 +231,15 @@ check_studies_fixed <- rbind(studies_one_contr_sampleAdj,
                              study_138, study_157, study_264_sampleAdj, 
                              study_324_sampleAdj)
 
-colnames(df_wide)
-colnames(check_studies_fixed)
 
 df_wide <- df %>% 
   filter(!RefID %in% check_studies$RefID) %>% 
   # add studies with sampled comparisons
   group_by(RefID) %>%
+  # pivot_wider(names_from = Condition,
+  #             values_from = all_of(var)) %>% 
   pivot_wider(names_from = Condition,
-              values_from = all_of(var)) %>% 
+              values_from = c(n, Anesthesia, Mean, Median, SD, SEM)) %>% 
   select(-c(Condition2)) %>% 
   fill(everything(), .direction = "downup") %>% 
   distinct() %>% 

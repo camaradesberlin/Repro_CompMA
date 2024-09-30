@@ -19,7 +19,7 @@ output:
 knitr::opts_chunk$set(message=FALSE, warning=FALSE)
 library("here")
 flextable::set_flextable_defaults(font.family = "TimesNewRoman")
-source(here::here("scripts", "02_Analysis.R"))
+source(here::here("scripts","03_Small_data.R"))
 ```
 
 <br> <br>

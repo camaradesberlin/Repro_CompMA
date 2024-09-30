@@ -16,7 +16,7 @@ As part of our project 'Investigating concordance between preclinical multicentr
 
 ## Software
 
-The original review was analyzed using Comprehensive Meta-Analysis (CMA) (version 3; Biostat Inc., USA). We used R statistical software (RRID...) with the packages tidyverse, metafor and meta.
+The original review was analyzed using Comprehensive Meta-Analysis (CMA version 3; Biostat Inc., USA). We used R [@R] version `r Rversion`, as well as the packages  tidyverse `r tidyverse_version` [@tidyverse2019], metafor `r metafor_version` [@metafor2010] and meta `r meta_version` [@meta2019].
 
 ## Analysis plan
 
@@ -30,10 +30,10 @@ Statistical heterogeneity was assessed using the I2 statistic. An I2 value of \>
 
 ### Adapted analysis
 
-First, SMDs were calculated using the `escalc` function from the metafor package. Then, a random effects meta-analysis model was computed using the function `metagen` from the meta package, with % infarct volume as the response variable. The subgroups analyses were performed analogous to the main analysis, as described in the original review. 
+First, SMDs were calculated using the *escalc()* function from the metafor package. Then, a random-effects meta-analysis model was computed using the function *metagen()* from the meta package, with % infarct volume as the response variable. The subgroups analyses were performed analogous to the main analysis, as described in the original review. 
 
 We defined successful replication is achieved if our results lie within 10% of the results of the original review without a necessary change in the interpretation of the data.
 
 ## Data availability
 
-All data and code to reproduce this analysis are publically available on the CAMARADES Berlin GitHub page: <https://github.com/camaradesberlin/Repro_CompMA>
+All code and numerical data to reproduce this report are publically available on the CAMARADES Berlin GitHub page: <https://github.com/camaradesberlin/Repro_CompMA>

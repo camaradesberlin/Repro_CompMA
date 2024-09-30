@@ -79,6 +79,8 @@ meta::forest(ma_results_main,
 dev.off()
 
 
+
+
 ## Funnel plot asymmetry ----------------
 
 # Generate funnel plot
@@ -110,15 +112,15 @@ sex <- update(ma_results_main,
 
 # Number of limbs
 no.limbs <- update(ma_results_main,
-                   subgroup = No.Limbs_RIC)
+                   subgroup = No.Limbs)
 
 # which limb
 limb <- update(ma_results_main,
-               subgroup = Limbs_RIC)
+               subgroup = Limbs)
 
 # type of RIC
 type.RIC <- update(ma_results_main,
-                   subgroup = Type.RIC_RIC)
+                   subgroup = Type.RIC)
 
 # stroke model
 stroke.model <- update(ma_results_main,
@@ -132,11 +134,11 @@ anaesthesia <- update(ma_results_main,
 
 ## Meta-regression analyses
 # number of sessions
-no.session <- metareg(ma_results_main, ~No.Session_RIC) 
+no.session <- metareg(ma_results_main, ~No.Session) 
 #error message but don't understand why; potentially try metaregression
 
 # number of cycles
-no.cycles <- metareg(ma_results_main, ~No.Cycles_RIC)
+no.cycles <- metareg(ma_results_main, ~No.Cycles)
 
 # duration of RIC occlusion
 time.occlusion <-  metareg(ma_results_main, ~Occlusion)
@@ -167,3 +169,14 @@ RIC.onset.cond <- df.wide_es %>%
 
 # latest infarct measurement timepoint
 Time.infarct <- metareg(ma_results_main, ~Time.Inf)
+
+
+# Save small data ---------------------------------------------------------
+
+saveRDS(list(es_change = es_change, main_i2 = main_i2, 
+             main_i2_lower = main_i2_lower, 
+             main_i2_upper = main_i2_upper,
+             main_smd = main_smd, main_lower = main_lower, 
+             main_upper = main_upper), "data/small_data.rds")
+
+
