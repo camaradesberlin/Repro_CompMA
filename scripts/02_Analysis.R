@@ -37,7 +37,7 @@ ma_results_main <- metagen(
 
 ## Forest plot ----------------
 
-pdf(file = here::here("figs","forestplot.pdf"), width = 9, height = 31)
+pdf(file = here::here("figs","forestplot.pdf"), width = 9, height = 26)
 
 meta::forest(ma_results_main, 
              sortvar = ma_results_main$data$Author,
@@ -49,7 +49,7 @@ meta::forest(ma_results_main,
 
 dev.off()
 
-pdf(file = here::here("figs","forestplot_byES.pdf"), width = 9, height = 31)
+pdf(file = here::here("figs","forestplot_byES.pdf"), width = 9, height = 26)
 
 meta::forest(ma_results_main, 
              sortvar = TE,
