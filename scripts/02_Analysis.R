@@ -34,23 +34,6 @@ ma_results_main <- metagen(
   title = "Random effect inverse variance meta-analysis of the effects on infarct volume"
 )
 
-summary(ma_results_main)
-
-## small data
-
-main_i2 <- round(ma_results_main$I2*100, digits = 0)
-main_i2_lower <- round(ma_results_main$lower.I2*100, digits = 0)
-main_i2_upper <- round(ma_results_main$upper.I2*100, digits = 0)
-
-main_smd <- round(ma_results_main$TE.random, digits = 2)
-main_lower <- round(ma_results_main$lower.random, digits = 2)
-main_upper <- round(ma_results_main$upper.random, digits = 2)
-
-ripley_main_smd <- -2.19
-
-es_change <-  abs((main_smd - ripley_main_smd) / ((main_smd + ripley_main_smd) / 2) * 100)
-
-es_change <- round(es_change, digits = 1)
 
 ## Forest plot ----------------
 
@@ -77,8 +60,6 @@ meta::forest(ma_results_main,
              leftlabs = c("Author"))
 
 dev.off()
-
-
 
 
 ## Funnel plot asymmetry ----------------
@@ -127,8 +108,12 @@ stroke.model <- update(ma_results_main,
                        subgroup = Stroke.Type) 
 
 # anaesthesia
-anaesthesia <- update(ma_results_main,
+anesthesia <- update(ma_results_main,
                       subgroup = Anesthesia_RIC)
+
+# time.cond
+time.cond <- update(ma_results_main,
+                     subgroup = Time.cond)
 
 # information on randomisation and blinding is not in the data
 
@@ -171,12 +156,53 @@ RIC.onset.cond <- df.wide_es %>%
 Time.infarct <- metareg(ma_results_main, ~Time.Inf)
 
 
+
+# Small data --------------------------------------------------------------
+
+main_i2 <- round(ma_results_main$I2*100, digits = 0)
+main_i2_lower <- round(ma_results_main$lower.I2*100, digits = 0)
+main_i2_upper <- round(ma_results_main$upper.I2*100, digits = 0)
+
+main_smd <- round(ma_results_main$TE.random, digits = 2)
+main_lower <- round(ma_results_main$lower.random, digits = 2)
+main_upper <- round(ma_results_main$upper.random, digits = 2)
+
+ripley_main_smd <- -2.19
+
+es_change <-  abs((main_smd - ripley_main_smd) / ((main_smd + ripley_main_smd) / 2) * 100)
+
+es_change <- round(es_change, digits = 1)
+
+# smd_male <- sex$TE.random.w["Male"]
+# smd_female <- sex$TE.random.w["Female"]
+
+
+Rversion <- getRversion()
+tidyverse_version <- utils::packageVersion("tidyverse")
+metafor_version <- utils::packageVersion("metafor")
+meta_version <- utils::packageVersion("meta")
+
+
+
 # Save small data ---------------------------------------------------------
 
-saveRDS(list(es_change = es_change, main_i2 = main_i2, 
-             main_i2_lower = main_i2_lower, 
-             main_i2_upper = main_i2_upper,
-             main_smd = main_smd, main_lower = main_lower, 
-             main_upper = main_upper), "data/small_data.rds")
+# saveRDS(list(es_change = es_change, main_i2 = main_i2, 
+#              main_i2_lower = main_i2_lower, 
+#              main_i2_upper = main_i2_upper,
+#              main_smd = main_smd, main_lower = main_lower, 
+#              main_upper = main_upper), "data/small_data.rds")
 
+# save(ma_results_main, sex, species, no.limbs, no.cycles, time.occlusion,
+#      time.occlusion.cond, time.reperfusion, 
+#      time.reperfusion.cond, RIC.onset.cond, RIC.onset,
+#      no.cycles, no.session, anesthesia, stroke.model, limb,
+#      file = here::here("data","subgroup_models.Rdata"))
+
+save(Rversion, tidyverse_version, metafor_version,
+     meta_version, file = here::here("data","Renv.Rdata"))
+
+save(es_change, main_i2,
+     main_i2_upper, main_i2_lower,
+     main_smd, main_lower, main_upper,
+     file = here::here("data","small_data.Rdata"))
 

@@ -30,8 +30,8 @@ Statistical heterogeneity was assessed using the I2 statistic. An I2 value of \>
 
 ### Adapted analysis
 
-First, SMDs were calculated using the *escalc()* function from the metafor package. Then, a random-effects meta-analysis model was computed using the function *metagen()* from the meta package, with % infarct volume as the response variable. The subgroups analyses were performed analogous to the main analysis, as described in the original review. 
-
+First, SMDs were calculated using the *escalc()* function from the metafor package. Then, a random-effects meta-analysis model was computed using the function *metagen()* from the meta package, with % infarct volume as the response variable.
+<!-- The subgroups analyses were performed analogous to the main analysis, as described in the original review.  -->
 We defined successful replication is achieved if our results lie within 10% of the results of the original review without a necessary change in the interpretation of the data.
 
 ## Data availability

@@ -240,9 +240,11 @@ df_wide <- df %>%
   #             values_from = all_of(var)) %>% 
   pivot_wider(names_from = Condition,
               values_from = c(n, Anesthesia, Mean, Median, SD, SEM)) %>% 
-  select(-c(Condition2, Int.Label)) %>% 
-  fill(everything(), .direction = "downup") %>% 
+  # select(-c(Condition2)) %>% 
+  fill(everything(), .direction = "downup") %>%
+  # fill(n_Control, Mean_Control, Median_Control, SD_Control, SEM_Control, Anesthesia_Control, .direction = "downup") %>%
   distinct() %>% 
+  filter(!Condition2 %in% "Control") %>%
   ungroup() %>% 
   # rename(Type.RIC = Type.RIC_RIC)
   # add studies with different combinations of experimental arms + control groups

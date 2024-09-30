@@ -1,5 +1,5 @@
 ---
-title: "CAMARADES Reproducibility Challenge"
+title: "Evaluating the computational reproducibility of a systematic review on neuroprotective intervention in animal models of stroke"
 # author: "Maria Economou & Torsten Rackoll"
 bibliography:
   - "`r here::here('docs/repro_challenge_SR-SAVI_2024.bib')`"

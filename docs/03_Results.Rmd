@@ -12,6 +12,10 @@ The data we obtained and used to reproduce the results from Ripley et al. were i
 
 ## Main analyses
 
-We found that overall, groups that received RIC showed significantly reduced infarct volume compared to control groups (SMD = `r small_data$main_smd`, 95% CI [`r small_data$main_lower`; `r small_data$main_upper`], *I*^2^ = `r small_data$main_i2`%). This result supports the findings and conclusions of the main meta-analysis reported in Ripley and colleagues (SMD = -2.19, 95% CI [-2.48; -1.91], *I*^2^ = 74%). Although the interpretation of the direction of the overall effect does not change, we observed a deviation in average effect size compared to the original review amounting to a `r small_data$es_change`% difference, which is on the margin of the arbitrary cut-off we set as successful computational reproduction of the results.
+We found that overall, groups that received RIC showed significantly reduced infarct volume compared to control groups (SMD = `r small_data$main_smd`, 95% CI [`r small_data$main_lower`; `r small_data$main_upper`], *I*^2^ = `r small_data$main_i2`%). This result supports the findings and conclusions of the main meta-analysis reported in Ripley and colleagues (SMD = -2.19, 95% CI [-2.48; -1.91], *I*^2^ = 74%). Although the interpretation of the direction of the overall effect does not change, we observed a notable deviation in average effect size compared to the original review amounting to a `r small_data$es_change`% difference. Albeit an arbitrary cut-off, this finding highlights the challenge of computationally reproducing the main finding of the study we set out to replicate.
 
-## Subgroup analyses
+<!-- ## Subgroup analyses -->
+
+<!-- The subgroup analyses showed that efficacy of RIC differed significantly between male and female animals (), as well as between timing of conditioning (), however there was no significant difference of stroke model and type of RIC in the intervention's efficacy. These analyses support the findings of Ripley and colleagues (Fig 3 of original review). -->
+
+
