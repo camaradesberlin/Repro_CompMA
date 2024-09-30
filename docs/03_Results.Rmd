@@ -12,7 +12,7 @@ The data we obtained and used to reproduce the results from Ripley et al. were i
 
 ## Main analyses
 
-We found that overall, groups that received RIC showed significantly reduced infarct volume compared to control groups (SMD = `r small_data$main_smd`, 95% CI [`r small_data$main_lower`; `r small_data$main_upper`], *I*^2^ = `r small_data$main_i2`%). This result supports the findings and conclusions of the main meta-analysis reported in Ripley and colleagues (SMD = -2.19, 95% CI [-2.48; -1.91], *I*^2^ = 74%). Although the interpretation of the direction of the overall effect does not change, we observed a notable deviation in average effect size compared to the original review amounting to a `r small_data$es_change`% difference. Albeit an arbitrary cut-off, this finding highlights the challenge of computationally reproducing the main finding of the study we set out to replicate.
+We found that overall, groups that received RIC showed significantly reduced infarct volume compared to control groups (SMD = `r main_smd`, 95% CI [`r main_lower`; `r main_upper`], *I*^2^ = `r main_i2`%). This result supports the findings and conclusions of the main meta-analysis reported in Ripley and colleagues (SMD = -2.19, 95% CI [-2.48; -1.91], *I*^2^ = 74%). Although the interpretation of the direction of the overall effect does not change, we observed a notable deviation in average effect size compared to the original review amounting to a `r es_change`% difference. A difference of this magnitude highlights the challenge of computationally reproducing the main finding of the study we set out to replicate.
 
 <!-- ## Subgroup analyses -->
 
