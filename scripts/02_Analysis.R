@@ -54,7 +54,7 @@ es_change <- round(es_change, digits = 1)
 
 ## Forest plot ----------------
 
-pdf(file = here::here("figs","forestplot.pdf"), width = 9, height = 23)
+pdf(file = here::here("figs","forestplot.pdf"), width = 9, height = 31)
 
 meta::forest(ma_results_main, 
              sortvar = ma_results_main$data$Author,
@@ -66,7 +66,7 @@ meta::forest(ma_results_main,
 
 dev.off()
 
-pdf(file = here::here("figs","forestplot_byES.pdf"), width = 9, height = 23)
+pdf(file = here::here("figs","forestplot_byES.pdf"), width = 9, height = 31)
 
 meta::forest(ma_results_main, 
              sortvar = TE,

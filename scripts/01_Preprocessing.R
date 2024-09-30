@@ -240,7 +240,7 @@ df_wide <- df %>%
   #             values_from = all_of(var)) %>% 
   pivot_wider(names_from = Condition,
               values_from = c(n, Anesthesia, Mean, Median, SD, SEM)) %>% 
-  select(-c(Condition2)) %>% 
+  select(-c(Condition2, Int.Label)) %>% 
   fill(everything(), .direction = "downup") %>% 
   distinct() %>% 
   ungroup() %>% 
