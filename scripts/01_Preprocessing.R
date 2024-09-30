@@ -13,6 +13,7 @@ library(meta)
 library(metafor)
 library(dmetar)
 library(knitr)
+library(here)
 
 knitr::write_bib(c("metafor","dmetar"), file = here::here("docs/R_references.bib"))
 
@@ -224,6 +225,9 @@ check_studies_fixed <- rbind(studies_one_contr_sampleAdj,
                              study_138, study_157, study_264_sampleAdj, 
                              study_324_sampleAdj)
 
+colnames(df_wide)
+colnames(check_studies_fixed)
+
 df_wide <- df %>% 
   filter(!RefID %in% check_studies$RefID) %>% 
   # add studies with sampled comparisons
@@ -234,6 +238,7 @@ df_wide <- df %>%
   fill(everything(), .direction = "downup") %>% 
   distinct() %>% 
   ungroup() %>% 
+  # rename(Type.RIC = Type.RIC_RIC)
   # add studies with different combinations of experimental arms + control groups
   bind_rows(check_studies_fixed) %>% 
   # harmonize error measure - will we convert SEM to SD?
@@ -243,6 +248,8 @@ df_wide <- df %>%
                             .default = SD_Control)) %>% 
   arrange(RefID)
 
+# vars to check if complete
+# type RIC
 
 data.table::fwrite(df_wide, here::here("data","tidy","df_wide.csv"), row.names = F, col.names = T)
 

@@ -2,3 +2,9 @@
 
 <!-- What was your experience attempting to replicate / reproduce the study?
 What are your recommendations for the reproducibility of future systematic reviews and/or meta-analyses of in vitro or in vivo studies? -->
+
+
+The methodological description was sufficient/detailed enough to be able to set up the equivalent meta-analytical model using different software and parameters.
+
+The description of some analytical decisions, such as which experimental comparisons to focus on when those outnumbered the number of animals in the control group, were not as transparently reported in the publication and thus more challenging to reproduce. Nevertheless, sufficient methodological description in the supplementary material enabled us to reproduce the original methods.
+

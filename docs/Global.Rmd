@@ -13,7 +13,6 @@ output:
     
 # output:
 #   word_document: default
-  
 ---
 
 ```{r setup, include = FALSE}
@@ -23,9 +22,7 @@ flextable::set_flextable_defaults(font.family = "TimesNewRoman")
 source(here::here("scripts", "02_Analysis.R"))
 ```
 
-
-<br>
-<br>
+<br> <br>
 
 Maria Economou^1^, Torsten Rackoll^1^
 
@@ -35,28 +32,40 @@ Maria Economou^1^, Torsten Rackoll^1^
 
 <br>
 
-
 <!-- Introduction -->
+
 ```{r, 'include-intro', child='01_Introduction.Rmd', eval=T}
 ```
 
 <!-- Methods -->
+
 ```{r, 'include-method', child='02_Methods.Rmd', eval=T}
 ```
 
 <!-- Results -->
+
 ```{r, 'include-results', child='03_Results.Rmd', eval=T}
 ```
 
 <!-- Discussion -->
+
 ```{r, 'include-discussion', child='04_Discussion.Rmd', eval=T}
 ```
 
-# References
+\newpage
 
+# Appendix
+
+## References {.unnumbered}
+
+```{=tex}
 \begingroup
 \setlength{\parindent}{-0.5in}
 \setlength{\leftskip}{0.5in}
+```
+::: {#refs custom-style="Bibliography"}
+:::
 
-<div id="refs" custom-style="Bibliography"></div>
+```{=tex}
 \endgroup
+```

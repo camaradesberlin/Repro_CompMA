@@ -17,7 +17,10 @@ df.wide_es <- escalc(measure = "SMD",   # Specifies the type of effect size (Sta
                      m2i = Mean_Control,         # Mean of control group
                      sd2i = SD_Control,       # SD of control group
                      n2i = n_Control,         # Sample size of control group
-                     data = df_wide)
+                     data = df_wide) %>% 
+  # remove study with Median (unused in MA)
+  filter(!is.na(yi)) %>% 
+  arrange(Author)
 
 ## calculate random effect inverse variance meta-analysis
 ma_results_main <- metagen(
@@ -33,7 +36,51 @@ ma_results_main <- metagen(
 
 summary(ma_results_main)
 
-## assessment of funnel plot asymmetry
+## small data
+
+main_i2 <- round(ma_results_main$I2*100, digits = 0)
+main_i2_lower <- round(ma_results_main$lower.I2*100, digits = 0)
+main_i2_upper <- round(ma_results_main$upper.I2*100, digits = 0)
+
+main_smd <- round(ma_results_main$TE.random, digits = 2)
+main_lower <- round(ma_results_main$lower.random, digits = 2)
+main_upper <- round(ma_results_main$upper.random, digits = 2)
+
+ripley_main_smd <- -2.19
+
+es_change <-  abs((main_smd - ripley_main_smd) / ((main_smd + ripley_main_smd) / 2) * 100)
+
+es_change <- round(es_change, digits = 1)
+
+## Forest plot ----------------
+
+pdf(file = here::here("figs","forestplot.pdf"), width = 9, height = 23)
+
+meta::forest(ma_results_main, 
+             sortvar = ma_results_main$data$Author,
+             prediction = FALSE,
+             print.I2 = TRUE,
+             overall = TRUE,
+             xlim = c(-10, 10),
+             leftlabs = c("Author"))
+
+dev.off()
+
+pdf(file = here::here("figs","forestplot_byES.pdf"), width = 9, height = 23)
+
+meta::forest(ma_results_main, 
+             sortvar = TE,
+             prediction = FALSE,
+             print.I2 = TRUE,
+             overall = TRUE,
+             xlim = c(-10, 10),
+             leftlabs = c("Author"))
+
+dev.off()
+
+
+## Funnel plot asymmetry ----------------
+
 # Generate funnel plot
 meta::funnel(ma_results_main, 
              yaxis = "invvar",
