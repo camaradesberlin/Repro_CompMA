@@ -7,7 +7,7 @@
 
 # Libraries ---------------------------------------------------------------
 
-pacman::p_load(tidyverse, readxl, meta, metafor, knitr, here)
+pacman::p_load(tidyverse, readxl, meta, metafor, knitr, here, bookdown)
 
 # remotes::install_github("MathiasHarrer/dmetar")
 library(dmetar)

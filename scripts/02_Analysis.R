@@ -206,3 +206,20 @@ save(es_change, main_i2,
      main_smd, main_lower, main_upper,
      file = here::here("data","small_data.Rdata"))
 
+
+# Numbers for repro challenge manuscript ----------------------------------
+
+dat_reprochallenge <- data.frame(
+  smd = main_smd,
+  lower_ci = main_lower,
+  upper_ci = main_upper,
+  source = "replication"
+) |> 
+  add_row(
+    source = "original",
+    smd = -2.19,
+    lower_ci = -2.48,
+    upper_ci = -1.91
+  )
+
+data.table::fwrite(dat_reprochallenge, here::here("data","tidy","team_compRepro_data.csv"), row.names = F)
